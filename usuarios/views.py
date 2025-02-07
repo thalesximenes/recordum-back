@@ -1,95 +1,105 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
+from django.db import IntegrityError
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework import status, serializers
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import *
-from django.http import Http404
-from django.contrib.auth.models import User
+from .models import Informacoe, InformacoesSerializer, UserSerializer, CadastroSerializer, LoginSerializer, InformacaoSerializer
 
-class login(ObtainAuthToken):
+# LoginView
+class LoginView(ObtainAuthToken):
+    @swagger_auto_schema(
+        responses={200: LoginSerializer(many=False)},
+        operation_description="Retorna token e usuário."
+    )  
     def post(self, request, *args, **kwargs):
-        from django.db.models import Q
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
+        serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        return Response({
-            'user_id': user.pk,
-        })
-
-class cadastro(APIView):
-    def post(self, request):
-        username = request.data.get('username')
-        first_name = request.data.get('first_name')
-        last_name = request.data.get('last_name')
-        email = request.data.get('email')
-        senha = request.data.get('senha')
-        escolaridade = request.data.get('escolaridade')
-        vestibulares =  request.data.get('vestibulares')
-        curso =  request.data.get('curso')
-        universidade =  request.data.get('universidade')
-
-        if (len(username.strip()) == 0 or len(email.strip()) == 0 
-            or len(senha.strip()) == 0 or len(escolaridade.strip()) == 0
-            or len(vestibulares.strip()) == 0 or len(curso.strip()) == 0
-            or len(universidade.strip()) == 0 or len(first_name.strip()) == 0
-            or len(last_name.strip()) == 0):
-            return Response({"response":"Preencha todos os campos!"})
-    
-        user = User.objects.filter(username=username)
-
-        if user.exists():
-            return Response({"response":"Usuário já existente"}, status = status.HTTP_400_BAD_REQUEST)
         
-        try: 
-            user = User.objects.create_user(username = username,
-                                            first_name = first_name,
-                                            last_name = last_name,
-                                            email=email,
-                                            password=senha)                              
-            user.save()
+        try:
+          token, _created = Token.objects.get_or_create(user=user)
+        except Exception as e:
+          return Response({"response": e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        if user:
+          token, _created = Token.objects.get_or_create(user=user)
+          return Response({
+            'user_id': user.pk,
+            'token': token.key,
+        })
+        else:          
+          return Response({"error": "Credenciais inválidas"}, status=400)
 
-            usuario = User.objects.get(username = username)
-            
-            informacao = Informacoe(
-                usuario = usuario,
-                escolaridade = escolaridade,
-                vestibulares = vestibulares,
-                curso = curso,
-                universidade = universidade
+
+# CadastroView
+class CadastroView(APIView):
+    permission_classes = [AllowAny] 
+  
+    @swagger_auto_schema(
+        request_body=CadastroSerializer(many=False),
+        operation_description="Cadastra Usuário."
+    )
+    def post(self, request):
+        serializer = CadastroSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        try:
+            # Criação do usuário
+            user = User.objects.create_user(
+                username=data['username'],
+                first_name=data['first_name'],
+                last_name=data['last_name'],
+                email=data['email'],
+                password=data['senha']  # Certifique-se de que o campo é 'password' no serializer
             )
 
-            informacao.save()
+            # Criação das informações adicionais
+            Informacoe.objects.create(
+                usuario=user,
+                escolaridade=data['escolaridade'],
+                vestibulares=data['vestibulares'],
+                curso=data['curso'],
+                universidade=data['universidade']
+            )
 
-            return Response(status = status.HTTP_201_CREATED)
-        except:
-          return Response(status = status.HTTP_500_INTERNAL_SERVER_ERROR) 
+            return Response({"response": "Usuário cadastrado com sucesso"}, status=status.HTTP_201_CREATED)
+        except IntegrityError:
+            return Response({"response": "Erro ao salvar os dados"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class informacoes(APIView):
-    def get_informacoes(self, pk):
+
+# InformacoesViewSet
+class InformacoesViewSet(ModelViewSet):
+    queryset = Informacoe.objects.all()
+    serializer_class = InformacoesSerializer    
+    permission_classes = [IsAuthenticated]
+    
+    @swagger_auto_schema(
+        responses={200: InformacaoSerializer(many=False)},
+        operation_description="Retorna as informações do usuário."
+    )  
+    def retrieve(self, request, *args, **kwargs):
+        user = request.user
         try:
-            user = User.objects.get(pk=pk)
-            return Informacoe.objects.get(usuario = user)
+            informacoes = Informacoe.objects.get(usuario=user)
         except User.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk):
-        informacao = self.get_informacoes(pk)
-        serializer = InformacoesSerializer(informacao)
-        return Response(serializer.data)
-
-class pessoa(APIView):
-    def get_pessoa(self, pk):
-        try:
-           return User.objects.get(pk=pk)
-        except User.DoesNotExist:
-            raise Http404
+            raise Http404("Usuário não encontrado")
+        except Informacoe.DoesNotExist:
+            raise Http404("Informações do usuário não encontradas")
+          
+        # Serializar os dados
+        user_data = UserSerializer(user).data
         
-    def get(self, request, pk):
-        pessoa = self.get_pessoa(pk)
-        serializer = UserSerializer(pessoa)
-        return Response(serializer.data)
-# Create your views here.
+        informacoes_data = self.get_serializer(informacoes).data 
+        informacoes_data.pop("usuario", None)
+
+        # Unindo os dicionários
+        response_data = {**user_data, **informacoes_data}
+        
+        return Response(response_data)

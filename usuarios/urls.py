@@ -1,22 +1,19 @@
 from django.urls import path
-from .views import *
+from .views import CadastroView, LoginView, InformacoesViewSet
 
 app_name = 'usuarios'
 
 urlpatterns = [
     path('cadastro/',
-         cadastro.as_view(), 
+         CadastroView.as_view(), 
          name='cadastro'),
 
     path('login/',
-         login.as_view(), 
+         LoginView.as_view(), 
          name='disciplinas'),
 
-     path('informacao/<int:pk>',
-         informacoes.as_view(), 
+     path('informacao/',
+         InformacoesViewSet.as_view({'get': 'retrieve'}), 
          name='informacao'),
          
-     path('pessoa/<int:pk>',
-         pessoa.as_view(), 
-         name='informacao'),
 ]

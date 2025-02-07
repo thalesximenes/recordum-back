@@ -1,77 +1,80 @@
 from django.shortcuts import render
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import *
+from .models import EixosSerializer, EixosTematico, DisciplinasSerializer, Disciplinas, TemasSerializer, Temas, AulasSerializer, Aulas, MapasTexto, MapasTextosSerializer, AvaliacoesSerializer, Avaliacoe 
 from django.http import Http404
+
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 # Create your views here.
 
 class EixosListView(APIView):
+    @swagger_auto_schema(
+        responses={200: openapi.Response(
+          description="Lista de eixos retornada com sucesso", 
+          schema=EixosSerializer(many=True))
+          },
+        operation_description="Retorna os eixos de estudo."
+    )  
     def get(self, request):
         eixos = EixosTematico.objects.all()
         serializer = EixosSerializer(eixos, many = True)
         return Response(serializer.data)
 
 class DisciplinasListView(APIView):
-    def get(self, request):
-        disciplinas = Disciplinas.objects.all()
+    @swagger_auto_schema(
+        responses={200: openapi.Response(
+          description="Lista de disciplinas retornada com sucesso",
+          schema=DisciplinasSerializer(many=True))},
+        operation_description="Retorna as disciplinas de acordo com um eixo temático."
+    )  
+    def get(self, request, fk):
+        disciplinas = Disciplinas.objects.filter(eixo = fk)
         serializer = DisciplinasSerializer(disciplinas, many = True)
         return Response(serializer.data)
 
-class DisciplinasDetailView(APIView):
-    def get_disciplina(self, fk):
-        try:
-            return Disciplinas.objects.filter(disciplina = fk)
-        except Disciplinas.DoesNotExist:
-            raise Http404
-    
-    def get(self, request, fk):
-        disciplina = self.get_disciplina(fk)
-        serializer = DisciplinasSerializer(disciplina, many = True)
-        return Response(serializer.data)
-
 class TemasListView(APIView):
-    def get_tema(self, fk):
-        try:
-            return Temas.objects.filter(disciplina = fk)
-        except Temas.DoesNotExist:
-            raise Http404
-    
+    permission_classes = [AllowAny] 
+    @swagger_auto_schema(
+        responses={200: openapi.Response(
+          description="Lista de temas retornada com sucesso",
+          schema=TemasSerializer(many=True))},
+        operation_description="Retorna os temas de acordo com a disciplina escolhida."
+    )  
     def get(self, request, fk):
-        tema = self.get_tema(fk)
-        serializer = TemasSerializer(tema, many = True)
-        return Response(serializer.data)
+        tema = Temas.objects.filter(disciplina = fk)        
+        tema_data = TemasSerializer(tema, many = True).data
+        # tema_data= []
+        
+        return Response(tema_data)
 
+class AulasDetailView(APIView):
+    @swagger_auto_schema(
+        responses={200: openapi.Response(
+          description="Lista de informações da aula retornada com sucesso",
+          schema=AulasSerializer(many=False))},
+        operation_description="Retorna as informações da aula selecionada."
+    )  
+    def get(self, request, pk):
+        aulas = Aulas.objects.get(id = pk)
+        serializer = AulasSerializer(aulas)
+        return Response(serializer.data)
+      
 class MapasTextoListView(APIView):
-    def get(self, request):
-        mapas = MapasTexto.objects.all()
+    @swagger_auto_schema(
+        responses={200: openapi.Response(
+          description="Lista de texto dos mapas retornada com sucesso",
+          schema=MapasTextosSerializer(many = True))},
+        operation_description="Retorna os textos dos mapas de acordo com uma aula."
+    )  
+    def get(self, request, fk):
+        mapas = MapasTexto.objects.filter(aula = fk)
         serializer = MapasTextosSerializer(mapas, many = True)
         return Response(serializer.data)
 
-class AulasListView(APIView):
-    def get_aulas(self, fk):
-        try:
-            return Aulas.objects.filter(tema = fk)
-        except Aulas.DoesNotExist:
-            raise Http404
-
-    def get(self, request, fk):
-        aulas = self.get_aulas(fk)
-        serializer = AulasSerializer(aulas, many = True)
-        return Response(serializer.data)
-
-class AulasDetailView(APIView):
-    def get_aulas(self, fk):
-        try:
-            return Aulas.objects.filter(disciplina = fk)
-        except Aulas.DoesNotExist:
-            raise Http404
-
-    def get(self, request, fk):
-        aulas = self.get_aulas(fk)
-        serializer = AulasSerializer(aulas, many = True)
-        return Response(serializer.data)
 
 class AvaliacoesListView(APIView):
     def get_avaliacoes(self, fk):
@@ -86,9 +89,9 @@ class AvaliacoesListView(APIView):
         return Response(serializer.data)
     
     def post(self, request):
-        avaliacaoSerializer =  AvaliacoesSerializer(data = request.data)
-        if avaliacaoSerializer.is_valid():
-            avaliacaoSerializer.save()
-            return Response(avaliacaoSerializer.data, status = status.HTTP_201_CREATED)
+        avaliacao_serializer = AvaliacoesSerializer(data = request.data)
+        if avaliacao_serializer.is_valid():
+            avaliacao_serializer.save()
+            return Response(avaliacao_serializer.data, status = status.HTTP_201_CREATED)
         
-        return Response(avaliacaoSerializer.errors) 
+        return Response(avaliacao_serializer.errors) 

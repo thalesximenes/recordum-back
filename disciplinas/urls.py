@@ -1,40 +1,36 @@
-from django.urls import path, include
-from .views import *
+from django.urls import path, include 
+from .views import EixosListView, DisciplinasListView, TemasListView, AulasDetailView, MapasTextoListView
 
 app_name = 'disciplinas'
 
 urlpatterns = [
     path('eixos/',
          EixosListView.as_view(), 
-         name='eixos list'),
-
-    path('disciplinas/',
-         DisciplinasListView.as_view(), 
-         name='disciplinas list'),
+         name='eixos-list'),
 
     path('disciplinas/<int:fk>',
-         DisciplinasDetailView.as_view(), 
+         DisciplinasListView.as_view(), 
          name='disciplinas detail'),
 
-    path('disciplinas/<int:fk>/temas',
+    path('temas/<int:fk>/',
          TemasListView.as_view(), 
          name='temas list'),
-    
-    path('aulas/temas/<int:fk>',
-         AulasListView.as_view(), 
-         name='aulas list temas'),
 
-     path('aulas/disciplina/<int:fk>',
+    path('aula/<int:pk>',
          AulasDetailView.as_view(), 
          name='aulas list disciplina'),
 
-    path('avaliacoes/<int:fk>',
-         AvaliacoesListView.as_view(), 
-         name='avaliacoes'),
-
-    path('mapastexto/',
+    path('mapastexto/<int:fk>',
          MapasTextoListView.as_view(), 
          name='mapastexto'),
+
+    # path('disciplinas/',
+    #      DisciplinasListView.as_view(), 
+    #      name='disciplinas list'),
+
+    # path('avaliacoes/<int:fk>',
+    #      AvaliacoesListView.as_view(), 
+    #      name='avaliacoes'),
 
     # path('arquivos/recuperar/<int:pk>/',
     #     arquivos_recuperar, 
