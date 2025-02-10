@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-class Informacoe(models.Model):
+class Informacoes(models.Model):
     usuario = models.OneToOneField(User, on_delete = models.CASCADE, primary_key=True)
     escolaridade = models.CharField(max_length=100)
     vestibulares = models.CharField(max_length=100)
@@ -12,9 +12,12 @@ class Informacoe(models.Model):
     def __str__(self) -> str:
         return self.vestibulares
 
+    class Meta:
+      verbose_name_plural = "Informações"
+
 class InformacoesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Informacoe
+        model = Informacoes
         fields = "__all__"
 
 class UserSerializer(serializers.ModelSerializer):

@@ -3,24 +3,30 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 
-class EixosTematico(models.Model):
+class EixosTematicos(models.Model):
     nome = models.CharField(max_length = 100)
 
     def __str__(self) -> str:
         return self.nome
+    
+    class Meta:
+      verbose_name_plural = "Eixos Temáticos"
 
 class EixosSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EixosTematico
+        model = EixosTematicos
         fields="__all__"
 
 class Disciplinas(models.Model):
     nome = models.CharField(max_length = 100)
     thumb = models.CharField(max_length= 500)
-    eixo = models.ForeignKey(EixosTematico, on_delete = models.DO_NOTHING)
+    eixo = models.ForeignKey(EixosTematicos, on_delete = models.DO_NOTHING)
 
     def __str__(self) -> str:
         return self.nome
+      
+    class Meta:
+      verbose_name_plural = "Disciplinas"
 
 class DisciplinasSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,6 +40,9 @@ class Temas(models.Model):
     def __str__(self) -> str:
         return self.tema
 
+    class Meta:
+      verbose_name_plural = "Temas"
+
 class Aulas(models.Model):
     nome = models.CharField(max_length = 100)
     tema = models.ForeignKey(Temas, on_delete = models.DO_NOTHING, blank=True)
@@ -42,11 +51,14 @@ class Aulas(models.Model):
 
     def __str__(self) -> str:
         return self.nome
+      
+    class Meta:
+      verbose_name_plural = "Aulas"
 
 class AulasSerializer(serializers.ModelSerializer):
     class Meta:
         model = Aulas
-        fields = "__all__"
+        fields = ("id", "nome", "aula", "mapa")
 
 class TemasSerializer(serializers.ModelSerializer):
     aulas = serializers.SerializerMethodField()
@@ -59,7 +71,7 @@ class TemasSerializer(serializers.ModelSerializer):
         aulas = Aulas.objects.filter(tema=obj)
         return AulasSerializer(aulas, many=True).data
 
-class MapasTexto(models.Model):
+class MapasTextos(models.Model):
     aula = models.OneToOneField(Aulas, on_delete = models.CASCADE, null=True)
     texto = models.CharField(max_length=500)
     x = models.FloatField(null=True)
@@ -68,12 +80,15 @@ class MapasTexto(models.Model):
     def __str__(self):
         return self.texto
 
+    class Meta:
+      verbose_name_plural = "Mapas Textos"
+
 class MapasTextosSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MapasTexto
+        model = MapasTextos
         fields = "__all__"
 
-class Avaliacoe(models.Model):
+class Avaliacoes(models.Model):
     usuario = models.ForeignKey(User, on_delete = models.CASCADE)
     aula = models.ForeignKey(Aulas, on_delete = models.CASCADE)
     nota = models.IntegerField()
@@ -83,7 +98,7 @@ class Avaliacoe(models.Model):
 
 class AvaliacoesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Avaliacoe
+        model = Avaliacoes
         fields = "__all__"
 
 class UltimaSessao(models.Model):

@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Disciplinas, Aulas, EixosTematico, MapasTexto, Temas
+from .models import Disciplinas, Aulas, EixosTematicos, MapasTextos, Temas
 
 admin.site.register(Aulas)
 admin.site.register(Disciplinas)
-admin.site.register(EixosTematico)
-admin.site.register(MapasTexto)
+admin.site.register(EixosTematicos)
+admin.site.register(MapasTextos)
 admin.site.register(Temas)

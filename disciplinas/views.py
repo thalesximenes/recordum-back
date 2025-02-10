@@ -4,7 +4,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import EixosSerializer, EixosTematico, DisciplinasSerializer, Disciplinas, TemasSerializer, Temas, AulasSerializer, Aulas, MapasTexto, MapasTextosSerializer, AvaliacoesSerializer, Avaliacoe 
+from .models import EixosSerializer, EixosTematicos, DisciplinasSerializer, Disciplinas, TemasSerializer, Temas, AulasSerializer, Aulas, MapasTextos, MapasTextosSerializer, AvaliacoesSerializer, Avaliacoes 
 from django.http import Http404
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -20,7 +20,7 @@ class EixosListView(APIView):
         operation_description="Retorna os eixos de estudo."
     )  
     def get(self, request):
-        eixos = EixosTematico.objects.all()
+        eixos = EixosTematicos.objects.all()
         serializer = EixosSerializer(eixos, many = True)
         return Response(serializer.data)
 
@@ -47,7 +47,6 @@ class TemasListView(APIView):
     def get(self, request, fk):
         tema = Temas.objects.filter(disciplina = fk)        
         tema_data = TemasSerializer(tema, many = True).data
-        # tema_data= []
         
         return Response(tema_data)
 
@@ -63,7 +62,7 @@ class AulasDetailView(APIView):
         serializer = AulasSerializer(aulas)
         return Response(serializer.data)
       
-class MapasTextoListView(APIView):
+class MapasTextosListView(APIView):
     @swagger_auto_schema(
         responses={200: openapi.Response(
           description="Lista de texto dos mapas retornada com sucesso",
@@ -71,7 +70,7 @@ class MapasTextoListView(APIView):
         operation_description="Retorna os textos dos mapas de acordo com uma aula."
     )  
     def get(self, request, fk):
-        mapas = MapasTexto.objects.filter(aula = fk)
+        mapas = MapasTextos.objects.filter(aula = fk)
         serializer = MapasTextosSerializer(mapas, many = True)
         return Response(serializer.data)
 
@@ -79,8 +78,8 @@ class MapasTextoListView(APIView):
 class AvaliacoesListView(APIView):
     def get_avaliacoes(self, fk):
         try:
-            return Avaliacoe.objects.filter(aula = fk)
-        except Avaliacoe.DoesNotExist:
+            return Avaliacoes.objects.filter(aula = fk)
+        except Avaliacoes.DoesNotExist:
             raise Http404
 
     def get(self, request, fk):

@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status, serializers
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from .models import Informacoe, InformacoesSerializer, UserSerializer, CadastroSerializer, LoginSerializer, InformacaoSerializer
+from .models import Informacoes, InformacoesSerializer, UserSerializer, CadastroSerializer, LoginSerializer, InformacaoSerializer
 
 # LoginView
 class LoginView(ObtainAuthToken):
@@ -61,7 +61,7 @@ class CadastroView(APIView):
             )
 
             # Criação das informações adicionais
-            Informacoe.objects.create(
+            Informacoes.objects.create(
                 usuario=user,
                 escolaridade=data['escolaridade'],
                 vestibulares=data['vestibulares'],
@@ -76,7 +76,7 @@ class CadastroView(APIView):
 
 # InformacoesViewSet
 class InformacoesViewSet(ModelViewSet):
-    queryset = Informacoe.objects.all()
+    queryset = Informacoes.objects.all()
     serializer_class = InformacoesSerializer    
     permission_classes = [IsAuthenticated]
     
@@ -87,10 +87,10 @@ class InformacoesViewSet(ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         user = request.user
         try:
-            informacoes = Informacoe.objects.get(usuario=user)
+            informacoes = Informacoes.objects.get(usuario=user)
         except User.DoesNotExist:
             raise Http404("Usuário não encontrado")
-        except Informacoe.DoesNotExist:
+        except Informacoes.DoesNotExist:
             raise Http404("Informações do usuário não encontradas")
           
         # Serializar os dados
