@@ -46,8 +46,9 @@ class Temas(models.Model):
 class Aulas(models.Model):
     nome = models.CharField(max_length = 100)
     tema = models.ForeignKey(Temas, on_delete = models.DO_NOTHING, blank=True)
-    aula = models.FileField(upload_to = "aulas", blank=True)
-    mapa = models.ImageField(upload_to = "mapa_Aula")
+    aula = models.CharField()
+    mapa = models.ImageField(upload_to = "mapa_aula")
+    duracao = models.FloatField(null=True)
 
     def __str__(self) -> str:
         return self.nome
@@ -58,7 +59,7 @@ class Aulas(models.Model):
 class AulasSerializer(serializers.ModelSerializer):
     class Meta:
         model = Aulas
-        fields = ("id", "nome", "aula", "mapa")
+        fields = ("id", "nome", "aula", "mapa", "duracao")
 
 class TemasSerializer(serializers.ModelSerializer):
     aulas = serializers.SerializerMethodField()

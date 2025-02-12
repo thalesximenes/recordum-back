@@ -3,6 +3,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.db.models import Count
 from rest_framework import status
 from .models import EixosSerializer, EixosTematicos, DisciplinasSerializer, Disciplinas, TemasSerializer, Temas, AulasSerializer, Aulas, MapasTextos, MapasTextosSerializer, AvaliacoesSerializer, Avaliacoes 
 from django.http import Http404
@@ -32,9 +33,9 @@ class DisciplinasListView(APIView):
         operation_description="Retorna as disciplinas de acordo com um eixo temático."
     )  
     def get(self, request, fk):
-        disciplinas = Disciplinas.objects.filter(eixo = fk)
-        serializer = DisciplinasSerializer(disciplinas, many = True)
-        return Response(serializer.data)
+        disciplinas = Disciplinas.objects.annotate(quantidade_aulas=Count('temas__aulas'))
+        data = [{'id': d.id, 'nome': d.nome, 'quantidade_aulas': d.quantidade_aulas} for d in disciplinas]
+        return Response(data)
 
 class TemasListView(APIView):
     permission_classes = [AllowAny] 
