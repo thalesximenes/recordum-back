@@ -73,7 +73,7 @@ class TemasSerializer(serializers.ModelSerializer):
         return AulasSerializer(aulas, many=True).data
 
 class MapasTextos(models.Model):
-    aula = models.OneToOneField(Aulas, on_delete = models.CASCADE, null=True)
+    aula = models.ForeignKey(Aulas, on_delete = models.CASCADE, null=True)
     texto = models.CharField(max_length=500)
     x = models.FloatField(null=True)
     y = models.FloatField(null=True)
