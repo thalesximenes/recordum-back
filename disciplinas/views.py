@@ -33,7 +33,7 @@ class DisciplinasListView(APIView):
         operation_description="Retorna as disciplinas de acordo com um eixo temático."
     )  
     def get(self, request, fk):
-        disciplinas = Disciplinas.objects.annotate(quantidade_aulas=Count('temas__aulas'))
+        disciplinas = Disciplinas.objects.filter(eixo=fk).annotate(quantidade_aulas=Count('temas__aulas'))
         data = [{'id': d.id, 'nome': d.nome, 'quantidade_aulas': d.quantidade_aulas} for d in disciplinas]
         return Response(data)
 
