@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-cl=$h%uvrso#=v-y)6ussue@g9w*_b^^5*w!jts4!&@4oa4y5i
 DEBUG = False
 
 ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1', 'recordum-app.herokuapp.com', 'recordum-0a325bbe6a18.herokuapp.com']
-CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
+CORS_ALLOWED_ORIGINS = ['http://localhost:3000', 'https://recordum-front-next.vercel.app']
 
 
 # Application definition
@@ -111,9 +111,17 @@ WSGI_APPLICATION = 'recordum.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 import dj_database_url
 DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL')
-    )
+    # 'default': dj_database_url.config(
+    #     default=config('DATABASE_URL')
+    # )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'recordum',
+        'USER': 'postgres', 
+        'PASSWORD': 'postgres',
+        'HOST': '127.0.0.1', 
+        'PORT': '5432',
+    }
 }
 db_from_env = dj_database_url.config(conn_max_age=600)
 DATABASES['default'].update(db_from_env)
