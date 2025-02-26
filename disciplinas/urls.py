@@ -1,5 +1,5 @@
 from django.urls import path, include 
-from .views import EixosListView, DisciplinasListView, TemasListView, AulasDetailView, MapasTextosListView
+from .views import EixosListView, DisciplinasListView, TemasListView, AulasDetailView, MapasTextosListView, AulaNotasCornellView
 
 app_name = 'disciplinas'
 
@@ -23,6 +23,10 @@ urlpatterns = [
     path('mapastextos/<int:fk>',
          MapasTextosListView.as_view(), 
          name='mapastextos'),
+
+     path('notas-cornell/<int:aula_id>',
+         AulaNotasCornellView.as_view(), 
+         name='aula-notas-cornell'),
 
     # path('disciplinas/',
     #      DisciplinasListView.as_view(), 

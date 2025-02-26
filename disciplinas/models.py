@@ -110,3 +110,27 @@ class UltimaSessaoSerializer(serializers.ModelSerializer):
     class Meta:
         model = UltimaSessao
         fields = "__all__"
+
+class NotasCornell(models.Model):
+    aula = models.ForeignKey(Aulas, on_delete = models.CASCADE)
+    sumario = models.CharField(null=True)
+    
+class NotasCornellTopico(models.Model):
+    nota = models.ForeignKey(NotasCornell, on_delete = models.CASCADE)
+    topico = models.CharField()
+    cor = models.CharField()
+
+class NotasCornellAnotacao(models.Model):
+    nota = models.ForeignKey(NotasCornell, on_delete = models.CASCADE)
+    topico = models.ForeignKey(NotasCornellTopico, on_delete = models.DO_NOTHING, null=True)
+    anotacao = models.CharField()
+
+class NotasCornellTopicoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotasCornellTopico
+        fields = ['topico', 'cor']
+
+class NotasCornellAnotacaoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotasCornellAnotacao
+        fields = ['topico', 'anotacao']

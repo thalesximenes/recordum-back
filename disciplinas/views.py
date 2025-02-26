@@ -5,10 +5,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Count
 from rest_framework import status
-from .models import EixosSerializer, EixosTematicos, DisciplinasSerializer, Disciplinas, TemasSerializer, Temas, AulasSerializer, Aulas, MapasTextos, MapasTextosSerializer, AvaliacoesSerializer, Avaliacoes 
+from .models import EixosSerializer, EixosTematicos, DisciplinasSerializer, Disciplinas, TemasSerializer, Temas, AulasSerializer, Aulas, MapasTextos, MapasTextosSerializer, AvaliacoesSerializer, Avaliacoes, NotasCornell, NotasCornellTopico, NotasCornellAnotacao, NotasCornellTopicoSerializer, NotasCornellAnotacaoSerializer 
 from django.http import Http404
 
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny
 
 # Create your views here.
 
@@ -94,4 +94,68 @@ class AvaliacoesListView(APIView):
             avaliacao_serializer.save()
             return Response(avaliacao_serializer.data, status = status.HTTP_201_CREATED)
         
-        return Response(avaliacao_serializer.errors) 
+        return Response(avaliacao_serializer.errors)
+    
+class AulaNotasCornellView(APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                name='aula_id',
+                in_=openapi.IN_PATH,
+                type=openapi.TYPE_INTEGER,
+                description="ID da aula para a qual as notas Cornell serão recuperadas.",
+                required=True
+            )
+        ],
+        responses={
+            200: openapi.Response(
+                description="Dados das notas Cornell recuperados com sucesso.",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'topicos': openapi.Schema(
+                            type=openapi.TYPE_ARRAY,
+                            items=openapi.Schema(
+                                type=openapi.TYPE_OBJECT,
+                                properties={
+                                    'topico': openapi.Schema(type=openapi.TYPE_STRING),
+                                    'cor': openapi.Schema(type=openapi.TYPE_STRING)
+                                }
+                            )
+                        ),
+                        'anotacoes': openapi.Schema(
+                            type=openapi.TYPE_ARRAY,
+                            items=openapi.Schema(
+                                type=openapi.TYPE_OBJECT,
+                                properties={
+                                    'topico': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                    'anotacao': openapi.Schema(type=openapi.TYPE_STRING)
+                                }
+                            )
+                        ),
+                        'sumario': openapi.Schema(type=openapi.TYPE_STRING)
+                    }
+                )
+            ),
+            },
+        operation_description="Recupera as notas Cornell relacionadas a uma aula específica."
+    )
+    def get(self, request, aula_id, format=None):
+        try:
+            notas_cornell = NotasCornell.objects.filter(aula_id=aula_id).first()
+            topicos = NotasCornellTopico.objects.filter(nota=notas_cornell)
+            anotacoes = NotasCornellAnotacao.objects.filter(nota=notas_cornell)
+
+            topicos_serializer = NotasCornellTopicoSerializer(topicos, many=True)
+            anotacoes_serializer = NotasCornellAnotacaoSerializer(anotacoes, many=True)
+
+            response_data = {
+                'topicos': topicos_serializer.data,
+                'anotacoes': anotacoes_serializer.data,
+                'sumario': notas_cornell.sumario if notas_cornell else None
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
