@@ -142,7 +142,8 @@ class AulaNotasCornellView(APIView):
     )
     def get(self, request, aula_id, format=None):
         try:
-            notas_cornell = NotasCornell.objects.filter(aula_id=aula_id).first()
+            user = request.user
+            notas_cornell = NotasCornell.objects.filter(user=user, aula_id=aula_id).first()
             topicos = NotasCornellTopico.objects.filter(nota=notas_cornell)
             anotacoes = NotasCornellAnotacao.objects.filter(nota=notas_cornell)
 

@@ -113,6 +113,7 @@ class UltimaSessaoSerializer(serializers.ModelSerializer):
 
 class NotasCornell(models.Model):
     aula = models.ForeignKey(Aulas, on_delete = models.CASCADE)
+    usuario = models.ForeignKey(User, on_delete = models.CASCADE)
     sumario = models.CharField(null=True)
     
 class NotasCornellTopico(models.Model):
