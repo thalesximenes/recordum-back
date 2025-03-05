@@ -129,9 +129,31 @@ class NotasCornellAnotacao(models.Model):
 class NotasCornellTopicoSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotasCornellTopico
-        fields = ['topico', 'cor']
+        fields = ['id', 'topico', 'cor']
 
 class NotasCornellAnotacaoSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotasCornellAnotacao
-        fields = ['topico', 'anotacao']
+        fields = ['id', 'anotacao', 'topico']
+    
+class NotasCornellSerializer(serializers.ModelSerializer):
+    topicos = NotasCornellTopicoSerializer(many=True)
+    anotacoes = NotasCornellAnotacaoSerializer(many=True)
+
+    class Meta:
+        model = NotasCornell
+        fields = ['id', 'aula', 'sumario', 'topicos', 'anotacoes']
+
+    def create(self, validated_data):
+        topicos_data = validated_data.pop('topicos')
+        anotacoes_data = validated_data.pop('anotacoes')
+
+        notas_cornell = NotasCornell.objects.create(**validated_data)
+
+        for topico_data in topicos_data:
+            NotasCornellTopico.objects.create(nota=notas_cornell, **topico_data)
+
+        for anotacao_data in anotacoes_data:
+            NotasCornellAnotacao.objects.create(nota=notas_cornell, **anotacao_data)
+
+        return notas_cornell

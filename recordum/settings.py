@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'usuarios',
     'whitenoise.runserver_nostatic',
-    'django_extensions',
+    # 'django_extensions',
 ]
 
 REST_FRAMEWORK = {

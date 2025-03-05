@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Count
 from rest_framework import status
-from .models import EixosSerializer, EixosTematicos, DisciplinasSerializer, Disciplinas, TemasSerializer, Temas, AulasSerializer, Aulas, MapasTextos, MapasTextosSerializer, AvaliacoesSerializer, Avaliacoes, NotasCornell, NotasCornellTopico, NotasCornellAnotacao, NotasCornellTopicoSerializer, NotasCornellAnotacaoSerializer 
+from .models import *
 from django.http import Http404
 
 from rest_framework.permissions import AllowAny
@@ -157,6 +157,20 @@ class AulaNotasCornellView(APIView):
             }
 
             return Response(response_data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+          
+class NotasCornellCreateView(APIView):       
+    def post(self, request, format=None):
+        try:
+            request.data['user'] = request.user.id
+
+            serializer = NotasCornellSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

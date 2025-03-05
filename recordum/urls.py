@@ -25,9 +25,9 @@ from rest_framework import permissions
 # Configuração do esquema do Swagger
 schema_view = get_schema_view(
     openapi.Info(
-        title="Minha API",
+        title="Recordum",
         default_version='v1',
-        description="Documentação da API com Swagger",
+        description="Documentação da API Recordum com Swagger",
         terms_of_service="https://www.google.com/policies/terms/",
         contact=openapi.Contact(email="thales_ximenes@hotmail.com"),
         license=openapi.License(name="MIT License"),
